@@ -8,29 +8,29 @@ import { RmqContext } from "@nestjs/microservices";
 export class UsersHandler {
   constructor(private readonly usersService: UsersService) {}
 
-  @MessagePattern("users.create")
-  create(@Payload() data: { email: string; name: string }) {
-    console.log({ data });
-    return this.usersService.create(data);
-  }
-
   // @MessagePattern("users.create")
-  // create(
-  //   @Payload() data: { email: string; name: string },
-  //   @Ctx() context: RmqContext,
-  // ) {
-  //   const channel = context.getChannelRef();
-  //   const originalMsg = context.getMessage();
-
-  //   try {
-  //     const result = this.usersService.create(data);
-  //     channel.ack(originalMsg);
-  //     return result;
-  //   } catch (error) {
-  //     channel.nack(originalMsg, false, true);
-  //     throw error;
-  //   }
+  // create(@Payload() data: { email: string; name: string }) {
+  //   console.log({ data });
+  //   return this.usersService.create(data);
   // }
+
+  @MessagePattern("users.create")
+  create(
+    @Payload() data: { email: string; name: string },
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      const result = this.usersService.create(data);
+      channel.ack(originalMsg);
+      return result;
+    } catch (error) {
+      channel.nack(originalMsg, false, true);
+      throw error;
+    }
+  }
 
   @MessagePattern(MSG.USERS_FIND_ALL)
   findAll() {

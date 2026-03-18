@@ -4,13 +4,17 @@
   "description": "NestJS Microservices with RabbitMQ",
   "scripts": {
     "start:gateway": "ts-node api-gateway/src/main.ts",
+    "start:notification": "ts-node notfication-service/src/main.ts",
     "start:users": "ts-node users-service/src/main.ts",
     "start:orders": "ts-node orders-service/src/main.ts",
     "start:payments": "ts-node payments-service/src/main.ts"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/typeorm": "^10.0.2",
@@ -18,6 +22,7 @@
     "amqplib": "^0.10.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "nodemailer": "^8.0.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "sqlite3": "^5.1.6",
@@ -25,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^7.0.11",
     "ts-node": "^10.9.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.0"

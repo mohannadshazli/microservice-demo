@@ -1,19 +1,30 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Inject,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { User } from "./user.entity";
+import { ClientProxy } from "@nestjs/microservices";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,
+    @Inject("NOTIFICATION_SERVICE")
+    private readonly notificationClient: ClientProxy,
   ) {}
 
   async create(data: { email: string; name: string }): Promise<User> {
     const existing = await this.repo.findOne({ where: { email: data.email } });
-    if (existing) throw new ConflictException(`Email ${data.email} already in use`);
-    return this.repo.save(this.repo.create(data));
+    if (existing)
+      throw new ConflictException(`Email ${data.email} already in use`);
+    const user = await this.repo.save(this.repo.create(data));
+    this.notificationClient.emit("user.created", data);
+    return user;
   }
 
   async findAll(): Promise<User[]> {
