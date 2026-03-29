@@ -7,7 +7,8 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
-import { ClientProxy } from "@nestjs/microservices";
+import { ClientProxy, RpcException } from "@nestjs/microservices";
+import { MSG } from "../../shared/message-patterns";
 
 @Injectable()
 export class UsersService {
@@ -18,12 +19,16 @@ export class UsersService {
     private readonly notificationClient: ClientProxy,
   ) {}
 
-  async create(data: { email: string; name: string }): Promise<User> {
+  async create(data: {
+    email: string;
+    username: string;
+    password: string;
+  }): Promise<User> {
     const existing = await this.repo.findOne({ where: { email: data.email } });
     if (existing)
       throw new ConflictException(`Email ${data.email} already in use`);
     const user = await this.repo.save(this.repo.create(data));
-    this.notificationClient.emit("user.created", data);
+    this.notificationClient.emit(MSG.USERS_CREATE, data);
     return user;
   }
 
@@ -31,9 +36,13 @@ export class UsersService {
     return this.repo.find();
   }
 
-  async findOne(id: string): Promise<User> {
-    const user = await this.repo.findOne({ where: { id } });
-    if (!user) throw new NotFoundException(`User ${id} not found`);
+  async findOne(email: string): Promise<User> {
+    const user = await this.repo.findOne({ where: { email } });
+    if (!user)
+      throw new RpcException({
+        statusCode: 404,
+        message: `User with email ${email} not found`,
+      });
     return user;
   }
 

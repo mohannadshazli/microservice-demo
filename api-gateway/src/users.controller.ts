@@ -9,15 +9,18 @@ import {
   Inject,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { IsEmail, IsString, MinLength, IsUUID } from "class-validator";
 import { firstValueFrom } from "rxjs";
 import { MSG } from "../../shared/message-patterns";
+import { AuthGuard } from "./guards/auth.guard";
 
 class CreateUserDto {
   @IsEmail() email: string;
-  @IsString() @MinLength(2) name: string;
+  @IsString() @MinLength(2) username: string;
+  @IsString() @MinLength(6) password: string;
 }
 
 class UpdateUserDto {
@@ -34,9 +37,10 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateUserDto) {
     console.log({ dto });
-    return firstValueFrom(this.usersClient.send("users.create", dto));
+    return firstValueFrom(this.usersClient.send(MSG.USERS_CREATE, dto));
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   findAll() {
     return firstValueFrom(this.usersClient.send(MSG.USERS_FIND_ALL, {}));

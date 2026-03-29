@@ -1,12 +1,13 @@
 import { Controller } from "@nestjs/common";
 import { Ctx, EventPattern, Payload, RmqContext } from "@nestjs/microservices";
 import { NotficationService } from "./notfication.service";
+import { MSG } from "shared/message-patterns";
 
 @Controller("notfication")
 export class NotficationHandler {
   constructor(private readonly notficationService: NotficationService) {}
 
-  @EventPattern("user.created")
+  @EventPattern(MSG.USERS_CREATE)
   async handleNotificationSend(
     @Payload() data: any,
     @Ctx() context: RmqContext,
